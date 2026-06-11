@@ -5,6 +5,8 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import dsaRoutes from './routes/dsaRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import adminQuizRoutes from './routes/adminQuizRoutes.js';
 const app = express();
 
 // Basic middleware
@@ -24,6 +26,8 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/quiz', quizRoutes);
+app.use('/api/admin/quiz', adminQuizRoutes);
 //---------------------------------------
 // Health check route
 app.get('/api/health', (req, res) => {

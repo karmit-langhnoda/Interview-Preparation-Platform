@@ -21,7 +21,7 @@ export const getRecent = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, recent, 'Recent solved problems fetched successfully'));
+    .json(new ApiResponse(200, recent, 'Recent activity fetched successfully'));
 });
 
 export const getToday = asyncHandler(async (req, res) => {

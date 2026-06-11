@@ -1,15 +1,8 @@
 import UserDsaProgress from '../models/UserDsaProgress.js';
 import DailyDsa from '../models/DailyDsa.js';
+import UserQuizAttempt from '../models/UserQuizAttempt.js';
 
-const getDateKey = (date = new Date()) => {
-  return date.toISOString().split('T')[0];
-};
-
-const getNDaysAgoKey = (daysAgo) => {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  return getDateKey(date);
-};
+const getDateKey = (date = new Date()) => date.toISOString().split('T')[0];
 
 const computeStreak = (progressDocs) => {
   const solvedDates = [...new Set(progressDocs.map((doc) => doc.date))].sort().reverse();
@@ -34,31 +27,62 @@ const computeStreak = (progressDocs) => {
 export const getDashboardStats = async (userId) => {
   const today = getDateKey(new Date());
 
-  const allProgress = await UserDsaProgress.find({ user: userId }).sort({ createdAt: -1 });
-  const todayProgress = await UserDsaProgress.find({ user: userId, date: today });
+  const allDsaProgress = await UserDsaProgress.find({ user: userId }).sort({ createdAt: -1 });
+  const todayDsaProgress = await UserDsaProgress.find({ user: userId, date: today });
 
-  const totalSolved = allProgress.length;
-  const solvedToday = todayProgress.length;
-  const streak = computeStreak(allProgress);
+  const allQuizAttempts = await UserQuizAttempt.find({ user: userId }).sort({ createdAt: -1 });
+  const todayQuizAttempts = await UserQuizAttempt.find({ user: userId, date: today });
+
+  const totalSolvedDsa = allDsaProgress.length;
+  const solvedDsaToday = todayDsaProgress.length;
+  const dsaStreak = computeStreak(allDsaProgress);
+
+  const totalQuizAttempts = allQuizAttempts.length;
+  const quizAttemptsToday = todayQuizAttempts.length;
+
+  const quizBySubject = {
+    oop: allQuizAttempts.filter((a) => a.subject === 'oop').length,
+    os: allQuizAttempts.filter((a) => a.subject === 'os').length,
+    dbms: allQuizAttempts.filter((a) => a.subject === 'dbms').length,
+    cn: allQuizAttempts.filter((a) => a.subject === 'cn').length
+  };
+
+  const totalQuizScore = allQuizAttempts.reduce((sum, a) => sum + (a.score || 0), 0);
+  const averageQuizScore =
+    totalQuizAttempts > 0 ? Math.round(totalQuizScore / totalQuizAttempts) : 0;
 
   return {
-    totalSolved,
-    solvedToday,
-    streak
+    dsa: {
+      totalSolved: totalSolvedDsa,
+      solvedToday: solvedDsaToday,
+      streak: dsaStreak
+    },
+    quiz: {
+      totalAttempts: totalQuizAttempts,
+      attemptsToday: quizAttemptsToday,
+      averageScore: averageQuizScore,
+      bySubject: quizBySubject
+    }
   };
 };
 
 export const getRecentSolved = async (userId, limit = 10) => {
-  const recent = await UserDsaProgress.find({ user: userId })
+  const recentDsa = await UserDsaProgress.find({ user: userId })
     .sort({ createdAt: -1 })
     .limit(limit);
 
-  return recent;
+  const recentQuiz = await UserQuizAttempt.find({ user: userId })
+    .populate('quizPaper', 'subject title version')
+    .sort({ createdAt: -1 })
+    .limit(limit);
+
+  return {
+    dsa: recentDsa,
+    quiz: recentQuiz
+  };
 };
 
 export const getTodaySummary = async () => {
   const today = getDateKey(new Date());
-  const daily = await DailyDsa.findOne({ date: today });
-
-  return daily;
+  return await DailyDsa.findOne({ date: today });
 };
