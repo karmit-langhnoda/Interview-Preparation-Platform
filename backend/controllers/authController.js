@@ -3,7 +3,7 @@ import Admin from '../models/Admin.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
-
+import InterviewSession from '../models/InterviewSession.js';
 const ADMIN_EMAIL = 'admin2005@gmail.com';
 
 const userCookieOptions = {
@@ -121,9 +121,15 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  return res
-    .clearCookie('userToken', userCookieOptions)
-    .clearCookie('adminToken', adminCookieOptions)
-    .status(200)
-    .json(new ApiResponse(200, {}, 'Logged out successfully'));
+  if (req.user?.id) {
+    await InterviewSession.deleteMany({ user: req.user.id, status: 'active' });
+  }
+
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none'
+  });
+
+  return res.status(200).json(new ApiResponse(200, null, 'Logged out successfully'));
 });

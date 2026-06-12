@@ -1,6 +1,7 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
+import { getMonthlyCalendar } from '../services/profileService.js';
 import {
   getDashboardStats,
   getRecentSolved,
@@ -43,4 +44,16 @@ export const getToday = asyncHandler(async (req, res) => {
       'Today dashboard data fetched successfully'
     )
   );
+});
+
+export const getStreakCalendar = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const year = Number(req.query.year) || now.getFullYear();
+  const month = Number(req.query.month) || now.getMonth() + 1;
+
+  const days = await getMonthlyCalendar(req.user.id, year, month);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { year, month, days }, 'Streak calendar fetched successfully'));
 });

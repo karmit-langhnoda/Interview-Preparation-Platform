@@ -3,7 +3,7 @@ import UserQuizAttempt from '../models/UserQuizAttempt.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
-
+// import { upsertActivity } from '../services/activityService.js'; 
 const getDateKey = (date = new Date()) => date.toISOString().split('T')[0];
 
 export const getQuizBySubject = asyncHandler(async (req, res) => {

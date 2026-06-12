@@ -7,6 +7,10 @@ import dsaRoutes from './routes/dsaRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import adminQuizRoutes from './routes/adminQuizRoutes.js';
+import noteRoutes from './routes/noteRoutes.js';
+import interviewRoutes from './routes/interviewRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
+import streakRoutes from './routes/streakRoutes.js';
 const app = express();
 
 // Basic middleware
@@ -28,6 +32,10 @@ app.use('/api/dsa', dsaRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/admin/quiz', adminQuizRoutes);
+app.use('/api/notes', noteRoutes);
+app.use('/api/interview', interviewRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/streak', streakRoutes);
 //---------------------------------------
 // Health check route
 app.get('/api/health', (req, res) => {
