@@ -23,6 +23,7 @@ const sanitizeOrigin = (url) => {
 const allowedClientOrigins = new Set(
   [
     sanitizeOrigin(process.env.CLIENT_URL),
+    'https://interview-preparation-platform-lake.vercel.app',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://127.0.0.1:5173',
