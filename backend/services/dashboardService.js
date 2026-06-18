@@ -1,21 +1,20 @@
 import UserDsaProgress from '../models/UserDsaProgress.js';
-import DailyDsa from '../models/DailyDsa.js';
 import UserQuizAttempt from '../models/UserQuizAttempt.js';
-
-const getDateKey = (date = new Date()) => date.toISOString().split('T')[0];
+import { getLocalDateKey } from '../utils/dateKey.js';
+import { getTodayDsa } from './dsaService.js';
 
 const computeStreak = (progressDocs) => {
   const solvedDates = [...new Set(progressDocs.map((doc) => doc.date))].sort().reverse();
 
   let streak = 0;
-  let expectedDate = getDateKey(new Date());
+  let expectedDate = getLocalDateKey(new Date());
 
   for (const date of solvedDates) {
     if (date === expectedDate) {
       streak += 1;
       const d = new Date(expectedDate);
       d.setDate(d.getDate() - 1);
-      expectedDate = getDateKey(d);
+      expectedDate = getLocalDateKey(d);
     } else {
       break;
     }
@@ -25,7 +24,7 @@ const computeStreak = (progressDocs) => {
 };
 
 export const getDashboardStats = async (userId) => {
-  const today = getDateKey(new Date());
+  const today = getLocalDateKey(new Date());
 
   const allDsaProgress = await UserDsaProgress.find({ user: userId }).sort({ createdAt: -1 });
   const todayDsaProgress = await UserDsaProgress.find({ user: userId, date: today });
@@ -83,6 +82,5 @@ export const getRecentSolved = async (userId, limit = 10) => {
 };
 
 export const getTodaySummary = async () => {
-  const today = getDateKey(new Date());
-  return await DailyDsa.findOne({ date: today });
+  return await getTodayDsa();
 };

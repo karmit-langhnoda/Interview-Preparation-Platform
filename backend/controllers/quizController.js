@@ -3,8 +3,53 @@ import UserQuizAttempt from '../models/UserQuizAttempt.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
-// import { upsertActivity } from '../services/activityService.js'; 
-const getDateKey = (date = new Date()) => date.toISOString().split('T')[0];
+import { upsertActivity } from '../services/activityService.js';
+import { getLocalDateKey } from '../utils/dateKey.js';
+
+const supportedSubjects = [
+  {
+    subject: 'oop',
+    title: 'Object Oriented Programming',
+    description: 'Inheritance, polymorphism, abstraction, and core OOP fundamentals.'
+  },
+  {
+    subject: 'os',
+    title: 'Operating Systems',
+    description: 'Processes, scheduling, memory management, and synchronization.'
+  },
+  {
+    subject: 'dbms',
+    title: 'Database Management Systems',
+    description: 'Normalization, SQL, transactions, and relational theory.'
+  },
+  {
+    subject: 'cn',
+    title: 'Computer Networks',
+    description: 'OSI model, TCP/IP, routing, and network fundamentals.'
+  }
+];
+
+export const getQuizList = asyncHandler(async (req, res) => {
+  const quizzes = await QuizPaper.find({}).sort({ updatedAt: -1, createdAt: -1 });
+
+  const summaries = supportedSubjects.map((subject) => {
+    const quiz = quizzes.find((item) => item.subject === subject.subject);
+
+    return {
+      ...subject,
+      generated: !!quiz,
+      quizId: quiz?._id || null,
+      title: quiz?.title || subject.title,
+      version: quiz?.version || null,
+      generatedAt: quiz?.generatedAt || null,
+      questionCount: quiz?.questions?.length || 0
+    };
+  });
+
+  return res.status(200).json(
+    new ApiResponse(200, summaries, 'Quiz list fetched successfully')
+  );
+});
 
 export const getQuizBySubject = asyncHandler(async (req, res) => {
   const { subject } = req.params;
@@ -87,7 +132,7 @@ export const submitQuizAnswers = asyncHandler(async (req, res) => {
       user: req.user.id,
       quizPaper: quiz._id,
       subject: quiz.subject,
-      date: getDateKey(),
+      date: getLocalDateKey(),
       answers: mappedAnswers,
       score,
       totalQuestions,
@@ -96,6 +141,8 @@ export const submitQuizAnswers = asyncHandler(async (req, res) => {
     },
     { new: true, upsert: true }
   );
+
+  await upsertActivity({ userId: req.user.id, quizInc: 1, date: getLocalDateKey() });
 
   const detailedQuestions = quiz.questions.map((q, idx) => {
     const ans = mappedAnswers.find((a) => a.questionIndex === idx);

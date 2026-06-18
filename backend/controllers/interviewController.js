@@ -2,7 +2,7 @@ import InterviewSession from '../models/InterviewSession.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import { getInterviewReply } from '../services/groqInterviewService.js';
+import { getInterviewIntro, getInterviewReply } from '../services/groqInterviewService.js';
 
 const buildSystemPrompt = (difficulty, subjects) =>
   `You are a technical interview bot.
@@ -32,7 +32,7 @@ export const startInterview = asyncHandler(async (req, res) => {
     ]
   });
 
-  const reply = await getInterviewReply(session.messages);
+  const reply = await getInterviewIntro(subjects, difficulty);
   session.messages.push(reply);
   await session.save();
 

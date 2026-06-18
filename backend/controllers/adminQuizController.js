@@ -3,8 +3,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import { generateQuizWithGroq } from '../services/groqQuizService.js';
-
-const getDateKey = (date = new Date()) => date.toISOString().split('T')[0];
+import { getLocalDateKey } from '../utils/dateKey.js';
 
 export const generateOrRegenerateQuiz = asyncHandler(async (req, res) => {
   const { subject } = req.body;
@@ -34,7 +33,7 @@ export const generateOrRegenerateQuiz = asyncHandler(async (req, res) => {
     { subject },
     {
       subject,
-      title: `${subject.toUpperCase()} Quiz - ${getDateKey()}`,
+      title: `${subject.toUpperCase()} Quiz - ${getLocalDateKey()}`,
       questions: formattedQuestions,
       generatedAt: new Date(),
       generatedBy: req.admin.id,

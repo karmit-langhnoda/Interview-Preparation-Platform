@@ -1,8 +1,7 @@
 import UserQuizAttempt from '../models/UserQuizAttempt.js';
 import UserDsaProgress from '../models/UserDsaProgress.js';
 import UserActivity from '../models/UserActivity.js';
-
-const dateKey = (d = new Date()) => d.toISOString().split('T')[0];
+import { getLocalDateKey } from '../utils/dateKey.js';
 
 export const getProfileSummaryData = async (userId) => {
   const quizzes = await UserQuizAttempt.find({ user: userId }).sort({ createdAt: -1 });
@@ -38,7 +37,7 @@ export const getProfileSummaryData = async (userId) => {
 };
 
 export const upsertActivity = async ({ userId, quizInc = 0, dsaInc = 0, noteInc = 0, date }) => {
-  const day = date || dateKey();
+  const day = date || getLocalDateKey();
   return await UserActivity.findOneAndUpdate(
     { user: userId, date: day },
     {
@@ -51,13 +50,15 @@ export const upsertActivity = async ({ userId, quizInc = 0, dsaInc = 0, noteInc 
 export const getMonthlyCalendar = async (userId, year, month) => {
   const first = new Date(year, month - 1, 1);
   const last = new Date(year, month, 0);
-  const start = dateKey(first);
-  const end = dateKey(last);
+  const start = getLocalDateKey(first);
+  const end = getLocalDateKey(last);
 
   const activities = await UserActivity.find({
     user: userId,
     date: { $gte: start, $lte: end }
   }).sort({ date: 1 });
+
+  const allActivities = await UserActivity.find({ user: userId }).sort({ date: 1 });
 
   const days = {};
   activities.forEach((a) => {
@@ -71,15 +72,17 @@ export const getMonthlyCalendar = async (userId, year, month) => {
 
   const dates = activities.map((a) => a.date).sort();
   let streak = 0;
-  let expected = dateKey(new Date());
+  let expected = getLocalDateKey(new Date());
 
-  for (let i = dates.length - 1; i >= 0; i--) {
-    if (dates[i] === expected) {
+  const allDates = allActivities.map((a) => a.date).sort();
+
+  for (let i = allDates.length - 1; i >= 0; i--) {
+    if (allDates[i] === expected) {
       streak += 1;
       const d = new Date(expected);
       d.setDate(d.getDate() - 1);
-      expected = dateKey(d);
-    } else if (dates[i] < expected) {
+      expected = getLocalDateKey(d);
+    } else if (allDates[i] < expected) {
       break;
     }
   }

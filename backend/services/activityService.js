@@ -1,9 +1,8 @@
 import UserActivity from '../models/UserActivity.js';
-
-const dateKey = (d = new Date()) => d.toISOString().split('T')[0];
+import { getLocalDateKey } from '../utils/dateKey.js';
 
 export const upsertActivity = async ({ userId, quizInc = 0, dsaInc = 0, noteInc = 0, date }) => {
-  const day = date || dateKey();
+  const day = date || getLocalDateKey();
   return await UserActivity.findOneAndUpdate(
     { user: userId, date: day },
     { $inc: { quizCount: quizInc, dsaCount: dsaInc, noteCount: noteInc } },
@@ -15,8 +14,8 @@ export const getCalendarData = async (userId, year, month) => {
   const first = new Date(year, month - 1, 1);
   const last = new Date(year, month, 0);
 
-  const start = dateKey(first);
-  const end = dateKey(last);
+  const start = getLocalDateKey(first);
+  const end = getLocalDateKey(last);
 
   const rows = await UserActivity.find({
     user: userId,

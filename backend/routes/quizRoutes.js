@@ -1,6 +1,7 @@
 import express from 'express';
 import authMiddleware from '../middleware/authMiddleware.js';
 import {
+  getQuizList,
   getQuizBySubject,
   submitQuizAnswers,
   getMyQuizAttempts,
@@ -9,6 +10,7 @@ import {
 
 const router = express.Router();
 
+router.get('/list', authMiddleware, getQuizList);
 router.get('/my-attempts', authMiddleware, getMyQuizAttempts);
 router.get('/attempt/:attemptId', authMiddleware, getQuizAttemptById);
 router.get('/:subject', authMiddleware, getQuizBySubject);

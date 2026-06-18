@@ -3,6 +3,7 @@ import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import DailyDsa from '../models/DailyDsa.js';
 import UserDsaProgress from '../models/UserDsaProgress.js';
+import { upsertActivity } from '../services/activityService.js';
 import { getTodayDsa } from '../services/dsaService.js';
 
 export const getTodayProblems = asyncHandler(async (req, res) => {
@@ -53,6 +54,8 @@ export const markSolved = asyncHandler(async (req, res) => {
     },
     { new: true, upsert: true }
   );
+
+  await upsertActivity({ userId: req.user.id, dsaInc: 1, date: daily.date });
 
   return res.status(200).json(
     new ApiResponse(200, progress, 'Marked as solved successfully')
